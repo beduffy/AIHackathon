@@ -3,6 +3,7 @@ import re
 import os
 from os.path import isfile, join
 import urllib
+import collections
 
 import pandas as pd
 
@@ -15,7 +16,7 @@ companies = ['accenture', 'deloitte', 'ibm', 'capgemini', ' hp ', 'infosys',
 
 cols_to_extract = ['GLOBALEVENTID', 'SQLDATE', 'SOURCEURL', 'ActionGeo_Lat', 'ActionGeo_Long',
                    'ActionGeo_FullName', 'ActionGeo_CountryCode']
-extra_columns = ['company', 'industry', 'topic', 'sentiment', 'title']
+extra_columns = ['company', 'industry', 'topic', 'sentiment']
 final_columns = cols_to_extract + extra_columns + ['title']
               
 with open('column_labels_2013+.txt') as f:
@@ -67,6 +68,7 @@ def get_company_rows(df, company):
 
 def get_topics(df):
     titles = df.tolist()
+    print titles
     counter = collections.Counter()
     for title in titles:
         counter.update(title.split())
@@ -76,6 +78,7 @@ def get_topics(df):
             del counter[word]
             
     print counter.most_common()
+    return counter
     
 def read_news_csv(fp):
     #df = pd.read_csv(fp)
@@ -107,16 +110,17 @@ def read_news_csv(fp):
     
     #print df_companies.head()
     print 'df from single file shape', df_companies.shape
-    
+    del df
     return df_companies
     
-def get_csv_paths(num_fetch=50):
+def get_csv_paths(num_fetch):
     path = 'data'   
     onlyfiles = [f for f in os.listdir(path) if isfile(join(path, f))]
 
     csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:] == 'CSV']    
 
-    csv_file_paths = csv_file_paths[0:num_fetch]
+    if num_fetch:
+		csv_file_paths = csv_file_paths[0:num_fetch]
     return csv_file_paths
 
 def create_merged_dataset(num_fetch):
@@ -136,7 +140,9 @@ def create_merged_dataset(num_fetch):
     get_topics(df_all['title'])
 
     df_all.to_csv(dest_path, index=True)
-    
-create_merged_dataset(1)
-#create_merged_dataset(10)
+   
+   
+if __name__ == "__main__":
+	create_merged_dataset(1)
+	#create_merged_dataset(10)
     

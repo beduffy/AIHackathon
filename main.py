@@ -14,10 +14,9 @@ companies = ['accenture', 'deloitte', 'ibm', 'capgemini', ' hp ', 'infosys',
              'glaxosmithkline']
 
 cols_to_extract = ['GLOBALEVENTID', 'SQLDATE', 'SOURCEURL', 'ActionGeo_Lat', 'ActionGeo_Long',
-                   'ActionGeo_CountryCode']
-                   #'''"ActionGeo_FullName",''' 
-extra_columns = ['company', 'industry', 'topic', 'sentiment']
-final_columns = cols_to_extract + extra_columns
+                   'ActionGeo_FullName', 'ActionGeo_CountryCode']
+extra_columns = ['company', 'industry', 'topic', 'sentiment', 'title']
+final_columns = cols_to_extract + extra_columns + ['title']
               
 with open('column_labels_2013+.txt') as f:
     col_labels = f.read().split('\t')
@@ -66,13 +65,24 @@ def get_company_rows(df, company):
         print df_comp['title']
     return df_comp
 
+def get_topics(df):
+    titles = df.tolist()
+    counter = collections.Counter()
+    for title in titles:
+        counter.update(title.split())
+    
+    for word in stopwords:
+        if word in counter:
+            del counter[word]
+            
+    print counter.most_common()
     
 def read_news_csv(fp):
     #df = pd.read_csv(fp)
     df = pd.read_table(fp, header=None)
     df.columns = col_labels
-    print df.head()
-    print df['SOURCEURL'].head()
+    #print df.head()
+    #print df['SOURCEURL'].head()
     print 'shape with duplicates:', df.shape
     df = df.drop_duplicates(subset=['SOURCEURL'], keep='first')
     print 'shape after dropping duplicates:', df.shape
@@ -82,6 +92,8 @@ def read_news_csv(fp):
     
     #print df['title']
     #print df['title'].value_counts() # very important to see error cases
+    
+    
     
     df_companies = pd.DataFrame(columns=final_columns)
     for idx, company in enumerate(companies):
@@ -102,8 +114,7 @@ def get_csv_paths(num_fetch=50):
     path = 'data'   
     onlyfiles = [f for f in os.listdir(path) if isfile(join(path, f))]
 
-    csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:] == 'CSV']
-    #csv_file_paths = ['data/20150420.export.CSV']    
+    csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:] == 'CSV']    
 
     csv_file_paths = csv_file_paths[0:num_fetch]
     return csv_file_paths
@@ -111,15 +122,18 @@ def get_csv_paths(num_fetch=50):
 def create_merged_dataset(num_fetch):
     dest_path = 'merged_big_dataset_{}.csv'
     csv_file_paths = get_csv_paths(num_fetch)
+    
     df_all = pd.DataFrame(columns=final_columns)
     for fp in csv_file_paths:
         df_relevant = read_news_csv(fp)
-        df_all = df_all.append(df_relevant)
         # append to large df containing everything of relevance from every csv
-      
+        df_all = df_all.append(df_relevant)
+         
     df_all = df_all.reset_index(drop=True)
     print df_all.head()
     print 'df_all shape', df_all.shape
+    
+    get_topics(df_all['title'])
 
     df_all.to_csv(dest_path, index=True)
     

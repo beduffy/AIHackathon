@@ -2,16 +2,19 @@ import datetime
 import re
 import os
 from os.path import isfile, join
+import urllib
 
 import pandas as pd
 
 pd.options.display.max_columns = 999
 
 
-companies = ['accenture', 'deloitte', 'ibm', 'capgemini', ' hp ']
+companies = ['accenture', 'deloitte', 'ibm', 'capgemini', ' hp ', 'infosys',
+             'johnson & johnson', 'roche', 'pfizer', 'novartis', 'bayer',
+             'glaxosmithkline']
 
 cols_to_extract = ['GLOBALEVENTID', 'SQLDATE', 'SOURCEURL', 'ActionGeo_Lat', 'ActionGeo_Long',
-                   'ActionGeo_CountryCode', 'title']
+                   'ActionGeo_CountryCode']
                    #'''"ActionGeo_FullName",''' 
 extra_columns = ['company', 'industry', 'topic', 'sentiment']
 final_columns = cols_to_extract + extra_columns
@@ -23,6 +26,11 @@ with open('column_labels_2013+.txt') as f:
 def clean_title(path):
     path = path.replace('-', ' ').lower()
     path = path.replace('_', ' ')
+    path = path.replace('+', ' ')
+    
+    path = urllib.unquote(path)
+    # todo domain
+    # todo remove something else
     
     #path = re.sub(r"[^A-Za-z]+", '', path) # keep spaces and it'll be fine
     return path
@@ -75,19 +83,6 @@ def read_news_csv(fp):
     #print df['title']
     #print df['title'].value_counts() # very important to see error cases
     
-    #df_acn = get_company_rows(df, 'accenture')
-    #df_deloitte = get_company_rows(df, 'deloitte')
-    #df_companies = []
-    '''df_companies = get_company_rows(df, 'accenture')
-    df_companies = df_companies[cols_to_extract]
-    
-    for col in extra_columns:
-        df_companies[col] = ""
-        
-    df_companies['company'] = 'accenture'
-    
-    '''
-    
     df_companies = pd.DataFrame(columns=final_columns)
     for idx, company in enumerate(companies):
         df_comp = get_company_rows(df, company)
@@ -113,18 +108,21 @@ def get_csv_paths(num_fetch=50):
     csv_file_paths = csv_file_paths[0:num_fetch]
     return csv_file_paths
 
-def create_merged_dataset(dest_path, csv_file_paths):
+def create_merged_dataset(num_fetch):
+    dest_path = 'merged_big_dataset_{}.csv'
+    csv_file_paths = get_csv_paths(num_fetch)
     df_all = pd.DataFrame(columns=final_columns)
     for fp in csv_file_paths:
         df_relevant = read_news_csv(fp)
         df_all = df_all.append(df_relevant)
         # append to large df containing everything of relevance from every csv
       
+    df_all = df_all.reset_index(drop=True)
     print df_all.head()
     print 'df_all shape', df_all.shape
 
-    df_all.to_csv(dest_path, index=False)
+    df_all.to_csv(dest_path, index=True)
     
-create_merged_dataset('merged_big_dataset_5.csv', get_csv_paths(5))
-#create_merged_dataset('merged_big_dataset_50.csv', get_csv_paths(50))
+create_merged_dataset(1)
+#create_merged_dataset(10)
     

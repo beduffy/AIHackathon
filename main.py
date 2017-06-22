@@ -33,7 +33,10 @@ def clean_title(path):
     path = path.replace('_', ' ')
     path = path.replace('+', ' ')
     
+    # remove %sign stuff
     path = urllib.unquote(path)
+    
+    
     # todo domain
     # todo remove something else
     
@@ -158,7 +161,8 @@ def create_merged_dataset(num_fetch):
    
    
 if __name__ == "__main__":
-	create_merged_dataset(5)
+	#create_merged_dataset(5)
+    create_merged_dataset(None)
 	#create_merged_dataset(3)
 	#create_merged_dataset(10)
     

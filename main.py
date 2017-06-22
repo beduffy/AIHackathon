@@ -117,7 +117,8 @@ def get_csv_paths(num_fetch):
     path = 'data'   
     onlyfiles = [f for f in os.listdir(path) if isfile(join(path, f))]
 
-    csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:] == 'CSV']    
+    #csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:].lower() == 'csv']
+	csv_file_paths = ['data/merged_csvs/' + f for f in onlyfiles if f[-3:].lower() == 'csv']
 
     if num_fetch:
 		csv_file_paths = csv_file_paths[0:num_fetch]

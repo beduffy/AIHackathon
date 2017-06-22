@@ -41,10 +41,13 @@ csv_file_paths = get_csv_paths(None)
 	
 #print csv_file_paths
 
-for year in ['2017']:#['2016', '2017']:
-	for month in ['01']:#['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+for year in ['2016']:#['2016', '2017']:
+	for month in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']: # 2017 ['02', '03', '04', '05', '06']:
 		year_month = '{0}{1}'.format(year, month)
+		print year_month
 		csv_for_specific = [f for f in csv_file_paths if year_month in f]
+		
+		print 'num files in month:', len(csv_for_specific)
 		print 'csv specific'
 		print csv_for_specific
 		
@@ -59,7 +62,9 @@ for year in ['2017']:#['2016', '2017']:
 			df_all = merge_two_dfs(df_all, df_next)
 			
 		df_all = df_all.reset_index(drop=True)
-		df_all.to_csv('data/merged_csvs/{}.csv'.format(year_month), index=True)
+		csv_path = 'data/merged_csvs/{}.csv'.format(year_month)
+		df_all.to_csv(csv_path, index=True)
+		print "\n Saved merged csv to {}".format(csv_path)
 
 print
 

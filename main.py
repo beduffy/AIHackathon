@@ -11,14 +11,18 @@ pd.options.display.max_columns = 999
 
 from stop_words import stopwords
 
+# todo remove rochester, bayern munich problem
+
 companies = ['accenture', 'deloitte', 'ibm', 'capgemini',  'infosys',
-             'roche', 'pfizer', 'novartis', 'bayer', 'glaxosmithkline']
+             'roche ', 'pfizer', 'novartis', 'bayer ', 'glaxosmithkline']
 
              #' hp ', 'johnson & johnson',
 cols_to_extract = ['GLOBALEVENTID', 'SQLDATE', 'SOURCEURL', 'ActionGeo_Lat', 'ActionGeo_Long',
                    'ActionGeo_FullName', 'ActionGeo_CountryCode']
 extra_columns = ['company', 'industry', 'topic', 'sentiment']
 final_columns = cols_to_extract + extra_columns + ['title']
+              
+stopwords += companies
               
 '''with open('column_labels_2013+.txt') as f:
     col_labels = f.read().split('\t')
@@ -78,11 +82,11 @@ def get_topics(df):
         if word in counter:
             del counter[word]
             
-    #print counter.most_common()
-    with open('topics_v2.txt', 'w') as f:
-        for k_v in counter_most_common():
-            print k_v
-            f.write(k_v + '\n')
+    print counter.most_common(50)
+    with open('topics_v4.txt', 'w') as f:
+        for k_v in counter.most_common():
+            #print k_v
+            f.write(str(k_v) + '\n')
 
     return counter
     
@@ -97,6 +101,7 @@ def read_news_csv(fp):
     print 'shape after dropping duplicates:', df.shape'''
     #print list(df.columns.values)
     print df.shape
+    df = df.drop('Unnamed: 0', 1)
     
     df['title'] = df['SOURCEURL'].map(get_title)
     #df['title'] = df['SOURCEURL'].apply(get_title, args=(,))

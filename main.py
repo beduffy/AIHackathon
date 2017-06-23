@@ -33,13 +33,10 @@ def clean_title(path):
     path = path.replace('_', ' ')
     path = path.replace('+', ' ')
     
-    # remove %sign stuff
-    path = urllib.unquote(path)
-    
-    
-    # todo domain
-    # todo remove something else
-    
+    # remove %sign stuff and unicode
+    #path = urllib.unquote(path)
+    path = urllib.unquote_plus(path)
+    path = path.decode('unicode_escape').encode('ascii','ignore')
     #path = re.sub(r"[^A-Za-z]+", '', path) # keep spaces and it'll be fine
     return path
     
@@ -64,14 +61,10 @@ def get_title_comp_better(url, company):
     
 def get_company_rows(df, company):
     df_comp = df[df['SOURCEURL'].str.contains(company)] # title or sourceurl?
-    #print df_comp.head()
-    #print df_acn.head(20)
     
     df_comp['title'] = df_comp['SOURCEURL'].apply(get_title_comp_better, args=(company, ))
 
     print 'Number of rows for company:', company, ':', df_comp.shape
-    #if df_comp.shape[0] > 0:
-    #    print df_comp['title']
     return df_comp
 
 def get_topics(df):
@@ -97,8 +90,6 @@ def read_news_csv(fp):
     df = pd.read_csv(fp)
     #df = pd.read_table(fp, header=None)
     #df.columns = cols_to_extract #col_labels
-    #print df.head()
-    #print df['SOURCEURL'].head()
     '''print 'shape with duplicates:', df.shape
     df = df.drop_duplicates(subset=['SOURCEURL'], keep='first')
     print 'shape after dropping duplicates:', df.shape'''
@@ -107,9 +98,7 @@ def read_news_csv(fp):
     df = df.drop('Unnamed: 0', 1)
     
     df['title'] = df['SOURCEURL'].map(get_title)
-    #df['title'] = df['SOURCEURL'].apply(get_title, args=(,))
     
-    #print df['title']
     #print df['title'].value_counts() # very important to see error cases
     
     df_companies = pd.DataFrame(columns=final_columns)
@@ -134,7 +123,6 @@ def get_csv_paths(num_fetch):
     path = 'data/merged_csvs'   
     onlyfiles = [f for f in os.listdir(path) if isfile(join(path, f))]
 
-    #csv_file_paths = ['data/'+f for f in onlyfiles if f[-3:].lower() == 'csv']
     csv_file_paths = ['data/merged_csvs/' + f for f in onlyfiles if f[-3:].lower() == 'csv']
 
     if num_fetch:

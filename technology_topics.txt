@@ -25,6 +25,7 @@ energy
 insurance
 interactive
 internet of things
+iot
 life sciences
 mobility
 operations

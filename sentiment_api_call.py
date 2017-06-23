@@ -2,6 +2,7 @@ import requests
 import json
 import csv
 import time
+import threading
 
 import pandas as pd
 
@@ -16,16 +17,34 @@ if 'Unnamed: 0' in df.columns:
 
 print df.head()
 
-sentiments = []
+sentiments = [""] * df.shape[0]
 
 start = time.time()
-for idx, title in enumerate(df['title']):
+
+
+
+def call_api(title, index):
+    """thread worker function"""
     r = requests.get(sentiment_api_url + title)
     resp_dict = json.loads(r.text)
-    sentiments.append(resp_dict['result'])
+    sentiments[index] = (resp_dict['result'])
     print idx, resp_dict
+
+
     
-df['sentiments'] = sentiments
+threads = []
+for idx, title in enumerate(df['title']):
+    t = threading.Thread(target=call_api, args=(title, idx, ))
+    threads.append(t)
+    t.start()
+    
+    if len(threads) > 10:
+        for i in xrange(len(threads) - 1, -1, -1):
+            threads[i].join()
+            del threads[i]
+        time.sleep(1)
+            
+df['sentiment'] = sentiments
 
 df.to_csv(dataset_path, index=False)
 

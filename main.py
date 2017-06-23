@@ -1,9 +1,11 @@
+#from __future__ import unicode_literals#
 import datetime
 import re
 import os
 from os.path import isfile, join
 import urllib
 import collections
+
 
 import pandas as pd
 
@@ -34,8 +36,10 @@ def clean_title(path):
     path = path.replace('+', ' ')
     
     # remove %sign stuff and unicode
-    #path = urllib.unquote(path)
-    path = urllib.unquote_plus(path)
+    path = urllib.unquote(path)
+    path = path.encode('string-escape')
+    #path = path.encode('ascii')
+    #path = urllib.unquote_plus(path)
     path = path.decode('unicode_escape').encode('ascii','ignore')
     #path = re.sub(r"[^A-Za-z]+", '', path) # keep spaces and it'll be fine
     return path
@@ -50,8 +54,6 @@ def get_title(url):
 
 def get_title_comp_better(url, company):
     split_url = url.strip().split('/')
-
-    # todo remove domain
     
     for between_slash in split_url:
         if company in between_slash:
@@ -104,11 +106,9 @@ def read_news_csv(fp):
     df_companies = pd.DataFrame(columns=final_columns)
     for idx, company in enumerate(companies):
         df_comp = get_company_rows(df, company)
-        #df_comp = df_comp[cols_to_extract]
         for col in extra_columns:
             df_comp[col] = ""
         df_comp['company'] = company
-        #df_comp['title'] = 
         #if df_comp.shape[0] > 0:
         #    print df_comp['title']
         
